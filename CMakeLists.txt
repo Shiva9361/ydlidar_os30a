@@ -33,9 +33,16 @@ set(DEPENDENCIES
     sensor_msgs
     OpenCV
     cv_bridge
+#FIX for humble
+    stereo_msgs
+    tf2_geometry_msgs
 )
 # find dependencies
 find_package(ament_cmake REQUIRED)
+
+#Fix for Humble
+find_package(stereo_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 find_package(rcutils REQUIRED)
 find_package(rclcpp REQUIRED)

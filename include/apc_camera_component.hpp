@@ -26,7 +26,7 @@
 
 #include "tf2_msgs/msg/tf_message.hpp"
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "std_msgs/msg/string.hpp"
 
@@ -43,41 +43,42 @@
 #include "types_calib.h"
 #include "devices/IMUDevice.h"
 
-#define TIMEZERO_ROS rclcpp::Time(0,0,RCL_ROS_TIME)
-#define TIMEZERO_SYS rclcpp::Time(0,0,RCL_SYSTEM_TIME)
+#define TIMEZERO_ROS rclcpp::Time(0, 0, RCL_ROS_TIME)
+#define TIMEZERO_SYS rclcpp::Time(0, 0, RCL_SYSTEM_TIME)
 
-namespace dmpreview {
-
-typedef std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>> pointcloudPub;
-//typedef std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Imu>> imuPub;
-typedef std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>> posePub;
-
-typedef std::shared_ptr<sensor_msgs::msg::CameraInfo> camInfoMsgPtr;
-typedef std::unique_ptr<sensor_msgs::msg::PointCloud2> pointcloudMsgPtr;
-
-//typedef std::unique_ptr<sensor_msgs::msg::Imu> imuMsgPtr;
-typedef std::unique_ptr<geometry_msgs::msg::PoseStamped> poseMsgPtr;
-
-
-class ApcCamera : public rclcpp::Node
+namespace dmpreview
 {
 
+    typedef std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>> pointcloudPub;
+    // typedef std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Imu>> imuPub;
+    typedef std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>> posePub;
+
+    typedef std::shared_ptr<sensor_msgs::msg::CameraInfo> camInfoMsgPtr;
+    typedef std::unique_ptr<sensor_msgs::msg::PointCloud2> pointcloudMsgPtr;
+
+    // typedef std::unique_ptr<sensor_msgs::msg::Imu> imuMsgPtr;
+    typedef std::unique_ptr<geometry_msgs::msg::PoseStamped> poseMsgPtr;
+
+    class ApcCamera : public rclcpp::Node
+    {
+
     public:
-        explicit ApcCamera(const rclcpp::NodeOptions & options);
+        explicit ApcCamera(const rclcpp::NodeOptions &options);
 
         virtual ~ApcCamera();
 
     protected:
         rcl_interfaces::msg::SetParametersResult paramChange_callback(std::vector<rclcpp::Parameter> parameters);
 
-        #ifdef _TEST
+#ifdef _TEST
         void timer_callback();
         rclcpp::TimerBase::SharedPtr timer_;
         rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
         size_t count_;
-        #endif //_TEST
+#endif //_TEST
 
-        typedef struct moduleModeConfig{
+        typedef struct moduleModeConfig
+        {
             int colorFormat;
             int colorWidth;
             int colorHeight;
@@ -88,8 +89,7 @@ class ApcCamera : public rclcpp::Node
             bool interLeaveMode;
         } module_mode_config_t;
         module_mode_config_t moduleModeConfig_ = {
-            0 ,1280 ,720 ,30 ,1280 ,720 ,4 ,false
-        };
+            0, 1280, 720, 30, 1280, 720, 4, false};
 
         void getModeConfig(int mode);
         void openDevice();
@@ -98,17 +98,17 @@ class ApcCamera : public rclcpp::Node
         void getLanuchParams();
         void deleteDevice();
         void dynamicChangeMode(int mode);
-        void print_qos(const rclcpp::QoS & qos);
+        void print_qos(const rclcpp::QoS &qos);
 
-        std::shared_ptr<sensor_msgs::msg::Image> ConvertFrameToMessage(cv::Mat & frame, const std::string enc);
+        std::shared_ptr<sensor_msgs::msg::Image> ConvertFrameToMessage(cv::Mat &frame, const std::string enc);
         rclcpp::Time frameTime2Ros(uint64_t t, rcl_clock_type_t clock_type = RCL_ROS_TIME);
 
         StreamMode getStreamModeIndex();
         StreamIntrinsics getCameraIntrinsics(
-            const StreamMode& stream_mode, bool* ok);
-        camInfoMsgPtr createCameraInfo(const CameraIntrinsics& in);
+            const StreamMode &stream_mode, bool *ok);
+        camInfoMsgPtr createCameraInfo(const CameraIntrinsics &in);
         StreamIntrinsics getCameraRectifyLog(
-            const StreamMode& stream_mode, bool* ok);
+            const StreamMode &stream_mode, bool *ok);
         int getRectifyLogIndex(StreamMode stream_mode);
 
         //+CallBack function
@@ -135,12 +135,12 @@ class ApcCamera : public rclcpp::Node
         image_transport::CameraPublisher pub_right_color;
         image_transport::CameraPublisher pub_depth;
         pointcloudPub pub_points;
-        //imuPub pub_imu;
-        //imuPub pub_imu_processed;
+        // imuPub pub_imu;
+        // imuPub pub_imu_processed;
         posePub pub_pose;
         //-Publishers
 
-        //Qos
+        // Qos
         rclcpp::QoS mQos;
 
         //+Camera infos
@@ -160,18 +160,21 @@ class ApcCamera : public rclcpp::Node
         std::string imu_frame_processed_id;
         //-Frame IDs
 
-        enum ColorFormat {
+        enum ColorFormat
+        {
             Color_MJPEG = 0,
             Color_YUYV
         };
 
-        enum DepthOutputType {
+        enum DepthOutputType
+        {
             Depth_Output_Raw = 0,
             Depth_Output_Gray,
             Depth_Output_Colorful,
         };
 
-        typedef struct DeviceParams {
+        typedef struct DeviceParams
+        {
             bool multi_module_;
 
             bool enable_color_stream_;
@@ -180,7 +183,7 @@ class ApcCamera : public rclcpp::Node
             bool enable_imu_stream_;
 
             int auto_config_camera_mode_;
-            int framerate_;    
+            int framerate_;
 
             int color_width_;
             int color_height_;
@@ -212,10 +215,11 @@ class ApcCamera : public rclcpp::Node
             rmw_qos_reliability_policy_t qos_reliability_;
             rmw_qos_durability_policy_t qos_durability_;
 
-        }device_params_t;
+        } device_params_t;
         device_params_t params_;
 
-        typedef struct SubResult {
+        typedef struct SubResult
+        {
             bool left_color;
             bool right_color;
             bool depth;
@@ -238,8 +242,7 @@ class ApcCamera : public rclcpp::Node
         libeYs3D::video::Producer::Callback mDepthStreamCallback;
         libeYs3D::video::PCProducer::PCCallback mPCStreamCallback;
         libeYs3D::sensors::SensorDataProducer::AppCallback mIMUStreamCallback;
-
-};
+    };
 
 } // namespace dmpreview
 
